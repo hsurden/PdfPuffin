@@ -43,11 +43,11 @@ head.move(to: NSPoint(x: 366, y: y)); head.line(to: NSPoint(x: 346, y: y + 15));
 accent.setFill(); head.fill()
 
 // First-launch note (unsigned app).
-let note = NSRect(x: 40, y: 44, width: 520, height: 74)
+let note = NSRect(x: 40, y: 38, width: 520, height: 88)
 NSColor(white: 1, alpha: 0.75).setFill()
 NSBezierPath(roundedRect: note, xRadius: 10, yRadius: 10).fill()
-text("The first time you open it, macOS may say it can't verify the developer.\nClick Done, then open System Settings ▸ Privacy & Security, scroll down,\nand click Open Anyway. After that it opens normally and updates itself.",
-     size: 11.5, weight: .regular, color: NSColor(white: 0.3, alpha: 1), centerY: 81, width: 500)
+text("The first time you open it, macOS may say it can't verify the developer.\nClick Done, then open System Settings ▸ Privacy & Security, scroll down,\nclick Open Anyway, and click Open when it asks again.\nAfter that it opens normally and updates itself.",
+     size: 11.5, weight: .regular, color: NSColor(white: 0.3, alpha: 1), centerY: 82, width: 500)
 
 NSGraphicsContext.restoreGraphicsState()
 try! rep.representation(using: .png, properties: [:])!.write(to: out)

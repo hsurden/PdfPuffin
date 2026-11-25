@@ -29,7 +29,9 @@ Requires an Apple-silicon Mac with macOS 14 or later.
 
 The first time you open it, macOS may say it can't verify the developer (the app isn't
 notarized by Apple). Click **Done**, open **System Settings ▸ Privacy & Security**, scroll
-down and click **Open Anyway**. After that it opens normally and updates itself.
+down and click **Open Anyway**, then click **Open** when the warning appears once more (your
+Mac may ask for your password). After that it opens normally and updates itself.
+[Apple's guide with pictures](https://support.apple.com/en-us/102445).
 
 ## Run it
 
