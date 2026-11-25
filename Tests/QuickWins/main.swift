@@ -176,6 +176,16 @@ check(win.window?.attachedSheet != nil, "compare sheet opened with the chosen do
 if let sheet = win.window?.attachedSheet { win.window?.endSheet(sheet) }
 settle()
 
+// Zoom percentages mean real paper size, as in PDF Expert (100% = actual size).
+let unit = d.pdfView.actualSizeScale
+check(unit >= 0.75 && unit <= 3, "screen gives a sensible real-size factor (\(unit))")
+let pct = NSMenuItem(title: "150%", action: nil, keyEquivalent: ""); pct.tag = 150
+win.zoomPercentAction(pct)
+check(abs(d.pdfView.displayZoom - 1.5) < 0.01 && abs(d.pdfView.scaleFactor - 1.5 * unit) < 0.01, "150% shows 150% and draws at 1.5 × real size")
+win.zoomActualAction(nil)
+check(abs(d.pdfView.displayZoom - 1) < 0.01, "⌘0 is actual paper size")
+check(PuffinPDFView.actualSizeScale(for: nil) == 1, "unknown screen falls back to PDFKit's scale")
+
 // View ▸ Zoom ▸ Pan & Zoom.
 PanZoomPanel.toggle()
 settle(0.4)

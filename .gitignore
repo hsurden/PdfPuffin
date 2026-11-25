@@ -5,3 +5,5 @@ build/
 .swiftpm/
 .claude/
 CLAUDE.local.md
+dist/
+.release-privacy-patterns

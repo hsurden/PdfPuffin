@@ -24,6 +24,42 @@ if you want it there.
 
 Requirements: Command Line Tools with Swift 6 (no Xcode). Build only: `scripts/build.sh [release|debug]`.
 
+## Install
+
+Download **[PdfPuffin.dmg](https://github.com/hsurden/PdfPuffin/releases/latest/download/PdfPuffin.dmg)**
+(always the newest release), open it, and drag PdfPuffin onto the Applications folder.
+Requires an Apple-silicon Mac with macOS 14 or later.
+
+The first time you open it, macOS may say it can't verify the developer (the app isn't
+notarized by Apple). Click **Done**, open **System Settings ▸ Privacy & Security**, scroll
+down and click **Open Anyway**. After that it opens normally and updates itself.
+
+## Updates
+
+PdfPuffin checks GitHub for a newer release once a day (turn this off with **PdfPuffin ▸
+Check for Updates Automatically**), or now with **PdfPuffin ▸ Check for Updates…**. Choose
+**Install Update**: the app downloads the release, checks that it is PdfPuffin, the expected
+version, and has an intact signature, then asks to restart. The new copy replaces the old one
+as PdfPuffin quits (unsaved documents still ask first) and reopens. Choose **When I Quit** to
+update the next time you quit instead.
+
+Because the app downloads the update itself, macOS doesn't flag it as downloaded from the
+internet, so updates open without the unverified-developer warning. Only the first copy,
+received by AirDrop, email or browser, needs **System Settings ▸ Privacy & Security ▸ Open
+Anyway** once. Keep PdfPuffin in Applications: a copy run from Downloads opens from a
+temporary location and can't replace itself.
+
+**Publishing a release** (maintainers):
+
+```bash
+scripts/release.sh 0.2 "What's new, shown in the update alert"
+```
+
+This sets the version, builds, runs the tests, commits, and creates the GitHub Release
+(`v0.2`) with `PdfPuffin-for-Mac.zip`, which installed copies look for, and `PdfPuffin.dmg`
+(`scripts/make-dmg.sh`), the installer to send people.
+`DRY_RUN=1` builds and zips without committing or publishing.
+
 ## Make an excerpt
 
 Click a thumbnail, then Shift-click the last page of a range or Command-click individual pages.
@@ -195,7 +231,7 @@ goes back to reading. Every change can be undone.
 | ⌘1 / ⌘2 / ⌘3 | Single Page / Two Pages / Two Pages but First Single |
 | ⌘4 | page grid (Thumbnails); ⌘4 again or the sidebar button leaves it |
 | ⌥⌘1–4, ⌥⌘0 | Bookmarks / Outline / Annotations / Thumbnails panel, hide left panel |
-| ⌘+ (⌘=) / ⌘− / ⌘0 / ⌘9 / ⌘8 | zoom in / out / 100% / fit width / fit page |
+| ⌘+ (⌘=) / ⌘− / ⌘0 / ⌘9 / ⌘8 | zoom in / out / 100% (actual paper size, as in PDF Expert) / fit width / fit page |
 | ⌘F, ⌘G, ⇧⌘G, ⌘E | find, next, previous, use selection |
 | ⌘D | add / remove bookmark |
 | ⌃⌘H / ⌃⌘U / ⌃⌘S / ⌃⌘N | highlight / underline / strikeout / note |

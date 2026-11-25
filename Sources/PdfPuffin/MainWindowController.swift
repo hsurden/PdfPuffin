@@ -870,11 +870,12 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 
     @objc func zoomInAction(_ sender: Any?) { current?.pdfView.zoomIn(nil) }
     @objc func zoomOutAction(_ sender: Any?) { current?.pdfView.zoomOut(nil) }
-    @objc func zoomActualAction(_ sender: Any?) { current?.setScale(1) }
+    /// ⌘0: actual paper size (PDF Expert's 100%).
+    @objc func zoomActualAction(_ sender: Any?) { current.map { $0.setScale($0.pdfView.actualSizeScale) } }
     @objc func zoomFitWidthAction(_ sender: Any?) { current?.zoomFitWidth() }
     @objc func zoomFitPageAction(_ sender: Any?) { current?.zoomFitPage() }
     @objc func zoomAutoAction(_ sender: Any?) { current?.pdfView.autoScales = true }
-    @objc func zoomPercentAction(_ sender: NSMenuItem) { current?.setScale(CGFloat(sender.tag) / 100) }
+    @objc func zoomPercentAction(_ sender: NSMenuItem) { current.map { $0.setScale(CGFloat(sender.tag) / 100 * $0.pdfView.actualSizeScale) } }
 
     // MARK: go
 

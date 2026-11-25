@@ -12,6 +12,16 @@ Native macOS PDF reader (Swift + AppKit + PDFKit), modelled on PDF Expert 3.13. 
 - `./run.sh` quits the running copy (asks it nicely; never force-kills, so a save
   prompt wins), builds, and opens the app with any file arguments.
 
+## Releases and updates
+
+- `scripts/release.sh <version> "<notes>"` is the only way to publish: it commits the version
+  bump on main, then adds main's files as one new commit on the local `public` branch and
+  pushes that to GitHub. Never push `main` itself; the remote `github` is set to push only
+  `public`. A plain push of code does not update anyone; only a GitHub Release does.
+- The in-app updater (`AppUpdate.swift`) downloads the release ZIP itself, so the new copy
+  has no quarantine flag, and swaps it in from a small shell script after the app quits.
+- `.release-privacy-patterns` (git-ignored) holds the patterns the release refuses to publish.
+
 ## Hard rules
 
 - **Arrow keys must always reach the PDF.** A common failure in other

@@ -115,7 +115,7 @@ final class ToolbarView: NSView, NSSearchFieldDelegate {
         convertTab.isOn = altRow == .convert && doc != nil
         fillTab.isOn = altRow == .fillSign && doc != nil
         guard let d = doc else { zoomButton.menu?.item(at: 0)?.title = "—"; return }
-        zoomButton.menu?.item(at: 0)?.title = "\(Int((d.pdfView.scaleFactor * 100).rounded()))%"
+        zoomButton.menu?.item(at: 0)?.title = "\(Int((d.pdfView.displayZoom * 100).rounded()))%"
         zoomButton.synchronizeTitleAndSelectedItem()
         sidebarButton.contentTintColor = d.sidebarVisible ? .white : Theme.toolbarIcon
         // Grid open: highlight its button; reading controls don't apply.

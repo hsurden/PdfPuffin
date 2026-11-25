@@ -47,6 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             win.showWindow(nil)
         }
         NSApp.activate(ignoringOtherApps: true)
+        UpdateController.shared.checkAtLaunch()
     }
 
     func makeWindow(initialHome: Bool = true) -> MainWindowController {
@@ -160,6 +161,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
+    @objc private func checkForUpdates(_ sender: Any?) { UpdateController.shared.check(quietly: false) }
+
+    @objc private func toggleAutomaticUpdates(_ sender: NSMenuItem) {
+        UpdateController.checksAutomatically.toggle()
+        sender.state = UpdateController.checksAutomatically ? .on : .off
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        UpdateController.shared.installIfStaged()
+    }
+
     // MARK: Open Recent
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -214,6 +226,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         bar.addItem(menu(appName, [
             item("About \(appName)", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+            .separator(),
+            item("Check for Updates…", #selector(checkForUpdates(_:))),
+            {
+                let i = item("Check for Updates Automatically", #selector(toggleAutomaticUpdates(_:)))
+                i.state = UpdateController.checksAutomatically ? .on : .off
+                return i
+            }(),
             .separator(),
             item("Hide \(appName)", #selector(NSApplication.hide(_:)), "h"),
             item("Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),

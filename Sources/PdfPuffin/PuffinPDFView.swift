@@ -186,3 +186,25 @@ final class PuffinPDFView: PDFView {
 extension PDFDisplayMode {
     var isContinuous: Bool { self == .singlePageContinuous || self == .twoUpContinuous }
 }
+
+// MARK: - zoom as PDF Expert shows it (100% = actual paper size)
+
+extension PuffinPDFView {
+    /// PDFKit's scale 1.0 draws one PDF point (1/72 inch) per screen point, which on a
+    /// Retina MacBook (about 127 points per inch) shows a page at only ~57% of its paper
+    /// size. PDF Expert and PdfPuffin call 100% the real paper size instead, so every
+    /// percentage shown or chosen is divided or multiplied by this factor.
+    static func actualSizeScale(for screen: NSScreen?) -> CGFloat {
+        guard let screen,
+              let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return 1 }
+        let mm = CGDisplayScreenSize(id).width
+        guard mm > 50 else { return 1 }                       // size unknown (some projectors, virtual displays)
+        let factor = screen.frame.width / (mm / 25.4) / 72
+        return factor.isFinite && (0.75...3).contains(factor) ? factor : 1
+    }
+
+    var actualSizeScale: CGFloat { Self.actualSizeScale(for: window?.screen ?? NSScreen.main) }
+
+    /// The zoom shown to the user: 1.0 means actual paper size.
+    var displayZoom: CGFloat { scaleFactor / actualSizeScale }
+}

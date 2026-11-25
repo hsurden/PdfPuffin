@@ -17,7 +17,8 @@ final class PanZoomPanel: NSPanel {
     }
 
     private let map = PanZoomMap()
-    private let slider = NSSlider(value: 1, minValue: 0.25, maxValue: 5, target: nil, action: nil)
+    /// In displayed zoom (1 = actual paper size), like the toolbar's percentage.
+    private let slider = NSSlider(value: 1, minValue: 0.25, maxValue: 4, target: nil, action: nil)
     private let percent = label("100%", size: 11, color: .secondaryLabelColor)
     private var timer: Timer?
 
@@ -62,8 +63,8 @@ final class PanZoomPanel: NSPanel {
             guard let self, self.isVisible else { return }
             self.map.refresh(force: false)
             if let pdf = self.map.pdf {
-                if !self.slider.isHighlighted { self.slider.doubleValue = Double(pdf.scaleFactor) }
-                self.percent.stringValue = "\(Int((pdf.scaleFactor * 100).rounded()))%"
+                if !self.slider.isHighlighted { self.slider.doubleValue = Double(pdf.displayZoom) }
+                self.percent.stringValue = "\(Int((pdf.displayZoom * 100).rounded()))%"
             }
         }
     }
@@ -71,7 +72,7 @@ final class PanZoomPanel: NSPanel {
     @objc private func zoomChanged() {
         guard let pdf = map.pdf else { return }
         pdf.autoScales = false
-        pdf.scaleFactor = CGFloat(slider.doubleValue)
+        pdf.scaleFactor = CGFloat(slider.doubleValue) * pdf.actualSizeScale
     }
     @objc private func zoomIn() { map.pdf?.zoomIn(nil) }
     @objc private func zoomOut() { map.pdf?.zoomOut(nil) }
