@@ -1,6 +1,6 @@
 # PdfPuffin: notes for agents
 
-Native macOS PDF reader (Swift + AppKit + PDFKit), modelled on PDF Expert 3.13. See README.md for features, keyboard map and gaps.
+Native macOS PDF reader (Swift + AppKit + PDFKit) that has many of the features of PDF Expert 3.13, but built entirely from scratch in Swift. See README.md for features, keyboard map and gaps.
 
 ## Build
 

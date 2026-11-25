@@ -46,6 +46,11 @@ for path in [["File", "New", "Empty Document"], ["File", "New", "From Images…"
              ["Annotate", "Double Arrow"], ["Annotate", "Color", "Custom…"]] {
     check(menuPath(path) != nil, "menu " + path.joined(separator: " ▸ "))
 }
+// PdfPuffin ▸ Make PdfPuffin the Default PDF App (not pressed here: it would change this Mac's settings).
+if let def = menuPath(["PdfPuffin", "Make PdfPuffin the Default PDF App"]) {
+    let enabled = delegate.validateMenuItem(def)
+    check(enabled == !DefaultPDFApp.isPdfPuffin, "default-app item is offered only when another app opens PDFs (now: \(DefaultPDFApp.currentName))")
+} else { check(false, "menu PdfPuffin ▸ Make PdfPuffin the Default PDF App") }
 check(menuPath(["File", "Import from iPhone or iPad"])?.identifier == NSMenuItem.importFromDeviceIdentifier,
       "iPhone import uses Continuity Camera")
 

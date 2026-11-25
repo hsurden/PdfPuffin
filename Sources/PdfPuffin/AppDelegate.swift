@@ -233,6 +233,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 i.state = UpdateController.checksAutomatically ? .on : .off
                 return i
             }(),
+            item("Make PdfPuffin the Default PDF App", #selector(makeDefaultPDFApp(_:))),
             .separator(),
             item("Hide \(appName)", #selector(NSApplication.hide(_:)), "h"),
             item("Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),

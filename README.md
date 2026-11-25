@@ -1,12 +1,35 @@
-# PdfPuffin: an open-source PDF Expert alternative for macOS
+<p align="center">
+  <img src="docs/logo.png" width="160" alt="PdfPuffin logo: a puffin whose beak is a folded page corner">
+</p>
 
-PdfPuffin is a free, open-source PDF reader and editor for the Mac, modelled on PDF Expert. It is a native macOS app built with Swift, AppKit and PDFKit. Annotate and highlight PDFs, fill and sign forms, run OCR on scans, extract and reorder pages, compare documents side by side, export to Word, and export your notes to Markdown.
+<h1 align="center">PdfPuffin</h1>
 
-If you use PDF Expert on the Mac, PdfPuffin’s menus, keyboard shortcuts, and annotation tools should feel familiar. It can import the signatures you saved in PDF Expert. Select ten pages from a casebook to make a class excerpt, compare two drafts side by side, or export your highlights as Markdown.
+<p align="center"><b>An open-source PDF Expert alternative for macOS</b></p>
+
+<p align="center">
+  <a href="https://github.com/hsurden/PdfPuffin/releases/latest/download/PdfPuffin.dmg"><b>⬇︎ Download PdfPuffin.dmg</b></a>
+  &nbsp;·&nbsp; <a href="#install">Install</a>
+  &nbsp;·&nbsp; <a href="#features">Features</a>
+  &nbsp;·&nbsp; <a href="#keyboard">Keyboard</a>
+</p>
+
+PdfPuffin is a free, open-source PDF reader and editor for the Mac that has many of the features of PDF Expert, but built entirely from scratch in Swift. It is a native macOS app using Apple's AppKit and PDFKit. Annotate and highlight PDFs, fill and sign forms, run OCR on scans, extract and reorder pages, compare documents side by side, export to Word, and export your notes to Markdown.
+
+If you use PDF Expert on the Mac, PdfPuffin’s menus, keyboard shortcuts, and annotation tools should feel familiar. Select ten pages from a casebook to make a class excerpt, compare two drafts side by side, or export your highlights as Markdown.
 
 ![PdfPuffin](docs/screenshot.jpg)
 
-`docs/reference/read-menus.applescript` dumps PDF Expert's menus and shortcuts, which PdfPuffin's menus follow.
+## Install
+
+<img src="docs/logo.png" width="76" align="right" alt="">
+
+Download **[PdfPuffin.dmg](https://github.com/hsurden/PdfPuffin/releases/latest/download/PdfPuffin.dmg)**
+(always the newest release), open it, and drag PdfPuffin onto the Applications folder.
+Requires an Apple-silicon Mac with macOS 14 or later.
+
+The first time you open it, macOS may say it can't verify the developer (the app isn't
+notarized by Apple). Click **Done**, open **System Settings ▸ Privacy & Security**, scroll
+down and click **Open Anyway**. After that it opens normally and updates itself.
 
 ## Run it
 
@@ -23,16 +46,6 @@ Finder ▸ Get Info ▸ Open with. It is **not** copied to /Applications; do tha
 if you want it there.
 
 Requirements: Command Line Tools with Swift 6 (no Xcode). Build only: `scripts/build.sh [release|debug]`.
-
-## Install
-
-Download **[PdfPuffin.dmg](https://github.com/hsurden/PdfPuffin/releases/latest/download/PdfPuffin.dmg)**
-(always the newest release), open it, and drag PdfPuffin onto the Applications folder.
-Requires an Apple-silicon Mac with macOS 14 or later.
-
-The first time you open it, macOS may say it can't verify the developer (the app isn't
-notarized by Apple). Click **Done**, open **System Settings ▸ Privacy & Security**, scroll
-down and click **Open Anyway**. After that it opens normally and updates itself.
 
 ## Updates
 
@@ -123,7 +136,7 @@ the PDF crop box, so content outside the visible area remains in the file.
 ## Page grid
 
 **View ▸ Thumbnails** (⌘4) or the four-squares button next to the sidebar button
-shows every page as a thumbnail, like PDF Expert. The annotate bar becomes the page
+shows every page as a thumbnail. The annotate bar becomes the page
 tools: **Insert page** (blank, after the selection), **Append file** (a PDF's pages
 after the selection), **Rotate** (⌥-click turns the other way), **Copy**, **Paste**
 (PDF pages or images after the selection), **Extract** (selected pages as a new tab)
@@ -133,7 +146,7 @@ goes back to reading. Every change can be undone.
 
 ## Features
 
-- **Tabs** in a dark tab strip: one document per tab, Home tab with a sidebar like PDF Expert's:
+- **Tabs** in a dark tab strip: one document per tab, Home tab with a sidebar:
   **Home** (Open Files, drop zone, Tools for You, Recents, Favorites), **Tools** (every tool by
   group; a tool that needs a document asks for one), **Recents** and **Favorites** (right-click a
   file, or File ▸ Add to Favorites), ⌘T, ⌘W, ⌃Tab / ⌃⇧Tab, ⇧⌘[ / ⇧⌘].
@@ -142,7 +155,7 @@ goes back to reading. Every change can be undone.
   Continuous Scroll; zoom box (percentages, Fit Width, Fit Page, Automatic) with − / +;
   floating "N of M" badge (click it for Go to Page); "‹ Back to p. N" pill after a jump.
   Reopens each file at the page you left it.
-- **Left sidebar** with PDF Expert's four tabs: Bookmarks (⌘D, saved per file),
+- **Left sidebar** with four tabs: Bookmarks (⌘D, saved per file),
   Outline, Annotations, Thumbnails (page numbers; blue badge on the current page).
 - **Thumbnail selection and merge:** click, ⌘-click, ⇧-click. With 2+ pages
   selected the panel shows *New Document* and *Add to…* (another open tab).
@@ -154,9 +167,8 @@ goes back to reading. Every change can be undone.
 - **Search panel** on the right: "Found: N", results grouped by page with the match
   in context, ↑ / ↓ arrows, This Document / All Tabs. Return or ⌘G = next, ⇧⌘G =
   previous, Esc closes.
-- **Annotate bar like PDF Expert's:** A-highlight, A-underline, A-strikeout | Pen, Eraser |
-  Text, Shapes | Note, Signature. Arming a tool opens a right-hand inspector, as in PDF
-  Expert, with that tool's colour swatches, line width, opacity, and fill (shapes), or
+- **Annotate bar:** A-highlight, A-underline, A-strikeout | Pen, Eraser |
+  Text, Shapes | Note, Signature. Arming a tool opens a right-hand inspector with that tool's colour swatches, line width, opacity, and fill (shapes), or
   font, size, bold, italic, text colour and background (Text). Each tool remembers its
   own settings. Esc or the hand button puts the tool down.
   - **Text:** click anywhere on the page and type directly; click elsewhere or Esc to
@@ -165,8 +177,8 @@ goes back to reading. Every change can be undone.
   - **Shapes:** rectangle, oval, line, arrow, highlight area; drag to draw, ⇧ for a
     square / circle / straight line.
   - **Pen** draws freehand; **Eraser** removes whole annotations you click or drag over.
-  - **Signature:** shows your signatures (imported from PDF Expert's saved signatures the
-    first time; *Import from PDF Expert* re-checks, *Add Image of Signature…* adds one).
+  - **Signature:** shows your signatures (it can import the ones you saved in another
+    PDF app on this Mac; *Add Image of Signature…* adds one).
     Pick one, then click the page to place it at its usual size or drag a box to size it.
   - **Move / resize / delete:** with no tool armed, click a placed signature, shape,
     pen stroke, text box or note to select it (dashed box with handles). Drag to move,
@@ -175,7 +187,7 @@ goes back to reading. Every change can be undone.
     signatures, moves and resizes, erasing and deleting, page rotation, appended,
     moved and removed pages.
   - Everything is saved into the PDF with its own appearance, so Preview, Acrobat and
-    PDF Expert show it (checked with Quick Look on a signed test form).
+    other PDF apps show it (checked with Quick Look on a signed test form).
 - **Convert** tab (or File ▸ Export To): **to Word** writes a .docx with the text,
   fonts and sizes, rejoins wrapped lines into paragraphs, undoes end-of-line hyphens,
   and starts each PDF page on a new Word page. **to Text / to RTF / to HTML** use the
@@ -225,13 +237,13 @@ goes back to reading. Every change can be undone.
 | ↑ / ↓ | scroll; **after clicking a thumbnail**, previous / next page (click the page to go back to scrolling) |
 | Space / ⇧Space, Page Down / Page Up | page down / up |
 | Home / End | first / last page |
-| ⌥↑ / ⌥↓ | previous / next page (PDF Expert's Go menu) |
+| ⌥↑ / ⌥↓ | previous / next page |
 | ⌥⌘G | Go to Page… (note: apps such as Google Drive can grab ⌥⌘G system-wide; click the "N of M" badge instead) |
 | ⌘[ / ⌘] | back / forward in page history |
 | ⌘1 / ⌘2 / ⌘3 | Single Page / Two Pages / Two Pages but First Single |
 | ⌘4 | page grid (Thumbnails); ⌘4 again or the sidebar button leaves it |
 | ⌥⌘1–4, ⌥⌘0 | Bookmarks / Outline / Annotations / Thumbnails panel, hide left panel |
-| ⌘+ (⌘=) / ⌘− / ⌘0 / ⌘9 / ⌘8 | zoom in / out / 100% (actual paper size, as in PDF Expert) / fit width / fit page |
+| ⌘+ (⌘=) / ⌘− / ⌘0 / ⌘9 / ⌘8 | zoom in / out / 100% (actual paper size) / fit width / fit page |
 | ⌘F, ⌘G, ⇧⌘G, ⌘E | find, next, previous, use selection |
 | ⌘D | add / remove bookmark |
 | ⌃⌘H / ⌃⌘U / ⌃⌘S / ⌃⌘N | highlight / underline / strikeout / note |
@@ -241,12 +253,12 @@ goes back to reading. Every change can be undone.
 | Esc | put the tool down, finish typing, or deselect |
 | Delete | remove the selected annotation |
 | ⌘C | copy text, or copy selected thumbnail pages as a PDF |
-| ⌘N | New from Clipboard (PdfPuffin's own; PDF Expert has no shortcut) |
+| ⌘N | New from Clipboard |
 | ⌘T, ⌘W, ⌥⌘W, ⇧⌘W | new tab, close tab, close other tabs, close window |
 | ⌃Tab / ⌃⇧Tab, ⇧⌘] / ⇧⌘[ | next / previous tab |
 | ⌘S, ⇧⌘S, ⌘P, ⌃⌘F | save, save as, print, full screen |
 
-## Known gaps versus PDF Expert
+## Known gaps
 
 - No Edit PDF, Excel / PowerPoint export, Measure, Translate, PDF Copilot or AI tools; Scan & OCR
   has only Recognize Text (no Enhance Scan, Split Pages, Clear Margins).
@@ -257,7 +269,7 @@ goes back to reading. Every change can be undone.
   page numbers and Bates numbers.
 - Search has Match Case and Whole Word, but no redaction.
 - PDFKit rewrites the file on Save; complex PDFs may come out larger or slightly
-  different from PDF Expert's saves.
+  different from the original.
 
 ## License
 
@@ -266,3 +278,8 @@ MIT. See [LICENSE](LICENSE).
 ## Disclaimer
 
 PdfPuffin is an independent project. It is not affiliated with, endorsed by, or connected to Readdle, the maker of PDF Expert. PDF Expert is a trademark of its owner, used here only to describe compatibility and the design PdfPuffin follows.
+
+<p align="center">
+  <img src="docs/logo.png" width="56" alt=""><br>
+  <sub>Happy reading, and happy marking up.</sub>
+</p>
