@@ -333,7 +333,7 @@ final class AnnotationsPane: NSView, NSTableViewDataSource, NSTableViewDelegate 
         allItems = []
         if let d = doc?.document {
             for i in 0..<d.pageCount {
-                for a in d.page(at: i)?.annotations ?? [] where Self.kinds.contains(a.type ?? "") {
+                for a in d.page(at: i)?.annotations ?? [] where Self.kinds.contains(a.type ?? "") && !a.isWatermark {
                     allItems.append((i, a))
                 }
             }
@@ -404,10 +404,29 @@ final class AnnotationsPane: NSView, NSTableViewDataSource, NSTableViewDelegate 
 
     @objc private func clicked() {
         guard let d = doc, table.clickedRow >= 0 else { return }
-        let (i, a) = items[table.clickedRow]
+        show(row: table.clickedRow)
+        d.annotationsActive = true
+    }
+
+    /// ↑/↓ after a click in the list: the previous / next annotation (stays at the ends).
+    func step(_ delta: Int) {
+        guard !items.isEmpty else { return }
+        let from = table.selectedRow >= 0 ? table.selectedRow : (delta > 0 ? -1 : items.count)
+        show(row: min(max(from + delta, 0), items.count - 1))
+    }
+
+    /// Highlights the row and shows that annotation on the page.
+    private func show(row: Int) {
+        guard let d = doc, items.indices.contains(row) else { return }
+        table.selectRowIndexes([row], byExtendingSelection: false)
+        table.scrollRowToVisible(row)
+        let (i, a) = items[row]
         guard let page = d.document.page(at: i) else { return }
         d.jump(to: PDFDestination(page: page, at: NSPoint(x: a.bounds.minX, y: a.bounds.maxY + 40)))
     }
+
+    /// The highlighted row in the list, for tests and menus.
+    var selectedRow: Int { table.selectedRow }
 
     @objc private func doubleClicked() {
         guard let d = doc, table.clickedRow >= 0 else { return }

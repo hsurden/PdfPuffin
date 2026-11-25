@@ -49,7 +49,7 @@ final class AnnotationSelection {
     /// The topmost selectable annotation at a page point.
     static func hit(_ page: PDFPage, _ p: NSPoint) -> PDFAnnotation? {
         page.annotations.reversed().first { a in
-            selectable.contains(a.type ?? "") && a.bounds.insetBy(dx: -4, dy: -4).contains(p)
+            selectable.contains(a.type ?? "") && !a.isWatermark && a.bounds.insetBy(dx: -4, dy: -4).contains(p)
         }
     }
 

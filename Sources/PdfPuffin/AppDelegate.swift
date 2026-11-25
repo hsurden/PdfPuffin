@@ -284,6 +284,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item("Rich Text Format…", #selector(M.exportToRTF(_:))),
                 item("HTML…", #selector(M.exportToHTML(_:))),
                 item("Image (PNG per page)…", #selector(M.exportToImages(_:))),
+                item("Images in PDF…", #selector(M.exportEmbeddedImages(_:))),
             ]),
             sub("Export Annotation Summary", [
                 item("Copy as Markdown", #selector(M.copyReadingNotes(_:))),
@@ -292,7 +293,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item("Save as HTML…", #selector(M.saveSummaryHTML(_:))),
             ]),
             item("Merge Files…", #selector(M.mergeFiles(_:))),
+            item("Split into Files…", #selector(M.splitIntoFiles(_:))),
             item("Set Password…", #selector(M.setPassword(_:))),
+            item("Remove Password…", #selector(M.removePassword(_:))),
             .separator(),
             item("Show in Finder", #selector(M.showInFinder(_:))),
             dynamicSub("Share", shareMenu),
@@ -314,15 +317,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item("Rotate Current Page Left", #selector(M.rotateLeftAction(_:)), "l"),
             item("Rotate Current Page Right", #selector(M.rotateRightAction(_:)), "r"),
             item("Insert Blank Page", #selector(M.insertBlankPageAction(_:))),
+            item("Remove Blank Pages…", #selector(M.removeBlankPages(_:))),
             .separator(),
             item("Clear Form", #selector(M.clearFormAction(_:))),
             item("Remove All Annotations", #selector(M.removeAllAnnotationsAction(_:))),
+            item("Add Watermark…", #selector(M.addWatermark(_:))),
+            item("Remove Watermark", #selector(M.removeWatermark(_:))),
             .separator(),
             sub("Find", [
                 item("Find…", #selector(M.findAction(_:)), "f"),
                 item("Find Next", #selector(M.findNext(_:)), "g"),
                 item("Find Previous", #selector(M.findPrevious(_:)), "g", [.command, .shift]),
                 item("Use Selection for Find", #selector(M.useSelectionForFind(_:)), "e"),
+            ]),
+            sub("Speech", [
+                item("Start Speaking", #selector(M.startSpeaking(_:))),
+                item("Stop Speaking", #selector(M.stopSpeaking(_:))),
             ]),
         ]))
 

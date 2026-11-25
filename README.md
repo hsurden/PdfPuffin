@@ -211,9 +211,21 @@ goes back to reading. Every change can be undone.
   went from 442 KB to 1.0 MB. Reduce File Size can bring it back down.
 - **File ▸ Reduce File Size…** saves a copy with images recompressed as JPEG at screen
   resolution (shows before → after; saves nothing if it wouldn't be smaller).
-  **Set Password…** saves a password-protected copy. **Properties…** shows file,
+  **Set Password…** saves an AES-encrypted copy that needs a password to open, or opens freely
+  but blocks printing, copying or editing (each one optional). **Remove Password…** saves an
+  unprotected copy of a PDF you have opened with its password. **Properties…** shows file,
   page size, PDF version, title, author, dates, producer, security and whether the
   pages have a text layer.
+- **Organize and convert:** File ▸ **Split into Files…** (every N pages, by page ranges, or one
+  file per top-level bookmark), Export To ▸ **Images in PDF…** (the pictures inside, at their
+  original resolution), Edit ▸ **Remove Blank Pages…** (shows which pages first; undoable).
+- **Watermarks:** Edit ▸ **Add Watermark…** puts faint text (or a picture) across all pages or
+  this one, diagonal or horizontal, in four colours and three strengths. Other PDF readers show
+  it. **Remove Watermark** takes it off again, including watermark annotations from other apps.
+- **Read aloud:** Edit ▸ Speech ▸ **Start Speaking** reads the selected text, or the document
+  from the current page on, turning pages as it goes. **Stop Speaking** stops.
+- **Annotation list:** click a comment, then ↓ / ↑ step to the next / previous one, jumping to
+  it on the page. Each document also reopens at the zoom you left it at.
 - **New documents:** File ▸ New ▸ **Empty Document** (one Letter page), **From Images…**
   (one page per image), **From File…** (PDFs and images combined into a new tab), and
   **Import from iPhone or iPad** (Continuity Camera: scan or photograph straight into a new tab).
@@ -236,7 +248,7 @@ goes back to reading. Every change can be undone.
 | Keys | Action |
 |---|---|
 | ← / → | previous / next page (always, even right after clicking a thumbnail or button) |
-| ↑ / ↓ | scroll; **after clicking a thumbnail**, previous / next page (click the page to go back to scrolling) |
+| ↑ / ↓ | scroll; **after clicking a thumbnail**, previous / next page; **after clicking a comment in the annotation list**, previous / next comment (click the page to go back to scrolling) |
 | Space / ⇧Space, Page Down / Page Up | page down / up |
 | Home / End | first / last page |
 | ⌥↑ / ⌥↓ | previous / next page |

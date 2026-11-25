@@ -248,7 +248,7 @@ extension PuffinPDFView {
     /// Removes the annotations under the eraser (whole annotations).
     private func erase(at pt: NSPoint, on page: PDFPage) {
         let hits = page.annotations.filter { a in
-            AnnotationsPane.kinds.contains(a.type ?? "") && a.bounds.insetBy(dx: -3, dy: -3).contains(pt)
+            AnnotationsPane.kinds.contains(a.type ?? "") && !a.isWatermark && a.bounds.insetBy(dx: -3, dy: -3).contains(pt)
                 && (a.type != "Ink" || Self.inkHit(a, pt))
         }
         guard !hits.isEmpty else { return }

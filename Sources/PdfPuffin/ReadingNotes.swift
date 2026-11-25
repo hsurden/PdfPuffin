@@ -51,7 +51,7 @@ enum ReadingNotes {
                 return $0.bounds.minX < $1.bounds.minX
             }
             for a in sorted {
-                guard let kind = a.type, AnnotationsPane.kinds.contains(kind) else { continue }
+                guard let kind = a.type, AnnotationsPane.kinds.contains(kind), !a.isWatermark else { continue }
                 let comment = (a.contents ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 let markup = ["Highlight", "Underline", "StrikeOut", "Squiggly"].contains(kind)
                 let quote = markup ? passage(a, on: page) : ""

@@ -9,7 +9,7 @@ import UniformTypeIdentifiers
 extension MainWindowController {
 
     /// Asks where to save, next to the PDF by default. Nil if cancelled.
-    private func askSaveURL(_ doc: DocumentViewController, suffix: String, ext: String, message: String? = nil) -> URL? {
+    func askSaveURL(_ doc: DocumentViewController, suffix: String, ext: String, message: String? = nil) -> URL? {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [UTType(filenameExtension: ext) ?? .data]
         panel.nameFieldStringValue = doc.displayName + suffix + "." + ext
@@ -21,7 +21,7 @@ extension MainWindowController {
 
     /// A PDF save must not land on a file another tab has open (it would be
     /// overwritten under that tab).
-    private func isOpenElsewhere(_ url: URL, except doc: DocumentViewController) -> Bool {
+    func isOpenElsewhere(_ url: URL, except doc: DocumentViewController) -> Bool {
         documentControllers.contains { $0 !== doc && $0.fileURL.map { DocumentViewController.sameFile($0, url) } == true }
     }
 
@@ -144,13 +144,22 @@ extension MainWindowController {
         doc.textEditor?.commit()
         let a = NSAlert()
         a.messageText = "Set Password"
-        a.informativeText = "Saves a copy that asks for this password before it opens. The open document is not changed."
-        let pw = NSSecureTextField(frame: NSRect(x: 0, y: 30, width: 260, height: 24))
+        a.informativeText = "Saves a protected copy. The open document is not changed."
+        let mode = NSPopUpButton(frame: NSRect(x: 0, y: 136, width: 300, height: 26), pullsDown: false)
+        mode.addItems(withTitles: ["Password needed to open", "Anyone can open; password to lift restrictions"])
+        let pw = NSSecureTextField(frame: NSRect(x: 0, y: 104, width: 300, height: 24))
         pw.placeholderString = "Password"
-        let again = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
+        let again = NSSecureTextField(frame: NSRect(x: 0, y: 74, width: 300, height: 24))
         again.placeholderString = "Verify"
-        let box = NSView(frame: NSRect(x: 0, y: 0, width: 260, height: 54))
-        box.addSubview(pw); box.addSubview(again)
+        let printing = NSButton(checkboxWithTitle: "Allow printing", target: nil, action: nil)
+        let copying = NSButton(checkboxWithTitle: "Allow copying text and images", target: nil, action: nil)
+        let editing = NSButton(checkboxWithTitle: "Allow editing, comments and form filling", target: nil, action: nil)
+        for (i, b) in [printing, copying, editing].enumerated() {
+            b.state = .on
+            b.frame = NSRect(x: 0, y: 46 - i * 23, width: 300, height: 20)
+        }
+        let box = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 162))
+        for v in [mode, pw, again, printing, copying, editing] as [NSView] { box.addSubview(v) }
         a.accessoryView = box
         a.addButton(withTitle: "Save Copy…")
         a.addButton(withTitle: "Cancel")
@@ -159,16 +168,40 @@ extension MainWindowController {
             guard a.runModal() == .alertFirstButtonReturn else { return }
             if pw.stringValue.isEmpty { a.informativeText = "Type a password."; continue }
             if pw.stringValue != again.stringValue { a.informativeText = "The two passwords don't match."; again.stringValue = ""; continue }
+            if mode.indexOfSelectedItem == 1, [printing, copying, editing].allSatisfy({ $0.state == .on }) {
+                a.informativeText = "Untick at least one permission: with everything allowed there is nothing for the password to protect."
+                continue
+            }
             break
         }
         guard let url = askSaveURL(doc, suffix: " (protected)", ext: "pdf") else { return }
         if isOpenElsewhere(url, except: doc) { refuseOpenFile(url); return }
         let p = pw.stringValue
-        guard doc.document.write(to: url, withOptions: [.userPasswordOption: p, .ownerPasswordOption: p]) else {
-            failed(url); return
-        }
+        let options = Self.protectionOptions(password: p, requireToOpen: mode.indexOfSelectedItem == 0,
+                                             printing: printing.state == .on, copying: copying.state == .on, editing: editing.state == .on)
+        guard doc.document.write(to: url, withOptions: options) else { failed(url); return }
         noteRecent(url)
-        flash("Saved password-protected “\(url.lastPathComponent)”")
+        flash("Saved protected “\(url.lastPathComponent)”")
+    }
+
+    /// Write options for Set Password. With a password to open and some actions
+    /// restricted, the restrictions get their own random owner password: if the
+    /// two were the same, anyone who could open the file could also lift them.
+    static func protectionOptions(password: String, requireToOpen: Bool,
+                                  printing: Bool, copying: Bool, editing: Bool) -> [PDFDocumentWriteOption: Any] {
+        var bits: UInt = 1 << 5                                   // screen readers may always read it
+        if printing { bits |= (1 << 0) | (1 << 1) }
+        if copying { bits |= 1 << 4 }
+        if editing { bits |= (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) }
+        let restricted = !(printing && copying && editing)
+        var options: [PDFDocumentWriteOption: Any] = [.accessPermissionsOption: bits]
+        if requireToOpen {
+            options[.userPasswordOption] = password
+            options[.ownerPasswordOption] = restricted ? UUID().uuidString + UUID().uuidString : password
+        } else {
+            options[.ownerPasswordOption] = password
+        }
+        return options
     }
 
     // MARK: properties
@@ -268,14 +301,14 @@ extension MainWindowController {
         })
     }
 
-    private func refuseOpenFile(_ url: URL) {
+    func refuseOpenFile(_ url: URL) {
         let a = NSAlert()
         a.messageText = "“\(url.lastPathComponent)” is open in another tab."
         a.informativeText = "Choose a different name or location."
         a.runModal()
     }
 
-    private func failed(_ url: URL) {
+    func failed(_ url: URL) {
         let a = NSAlert()
         a.messageText = "Could not save “\(url.lastPathComponent)”."
         a.informativeText = "PDFKit refused to write the file. Try another folder."

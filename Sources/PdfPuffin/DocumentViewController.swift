@@ -28,7 +28,9 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
 
     /// True after a click in the thumbnail list: ↑/↓ then step one page, like
     /// moving through the list. A click in the page turns it off (↑/↓ scroll again).
-    var thumbnailsActive = false
+    var thumbnailsActive = false { didSet { if thumbnailsActive { annotationsActive = false } } }
+    /// After clicking an annotation in the sidebar list, ↑/↓ step through the list.
+    var annotationsActive = false { didSet { if annotationsActive { thumbnailsActive = false } } }
     /// The text box being typed on the page, if any.
     var textEditor: InlineTextEditor?
     /// The floating note/comment card being edited, if any.
@@ -167,6 +169,9 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
         restored = true
         let start = lastPageKey.map { UserDefaults.standard.integer(forKey: $0) } ?? 0
         guard let p = document.page(at: min(max(0, start), max(0, pageCount - 1))) else { return }
+        if let k = zoomKey, let zoom = UserDefaults.standard.object(forKey: k) as? Double, zoom > 0 {
+            setScale(CGFloat(zoom) * pdfView.actualSizeScale)
+        }
         pdfView.go(to: p)
         // Auto-zoom settles on the next pass and can shift the view; jump again then.
         let initialPane = pdfView
@@ -179,6 +184,7 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
     }
 
     private var lastPageKey: String? { fileURL.map { "lastPage:" + $0.path } }
+    private var zoomKey: String? { fileURL.map { "zoom:" + $0.path } }
 
     // MARK: split view
 
@@ -243,6 +249,7 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
         backTarget = nil
         backPill.isHidden = true
         thumbnailsActive = false
+        annotationsActive = false
         indicateActivePane()
         pageChanged()
     }
@@ -284,6 +291,11 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
 
     @objc private func scaleChanged() {
         hideSelectionBar()
+        // Remember this document's zoom (as shown: 1 = actual size); Automatic zoom stores nothing.
+        if restored, let k = zoomKey {
+            if pdfView.autoScales { UserDefaults.standard.removeObject(forKey: k) }
+            else { UserDefaults.standard.set(Double(pdfView.displayZoom), forKey: k) }
+        }
         main?.updateToolbar()
     }
 
@@ -1072,5 +1084,21 @@ extension DocumentViewController {
         let i = currentPageIndex
         insertPages([blankPage(like: i)], at: i + 1, name: "Insert Blank Page")
         jump(toPage: i + 1)
+    }
+}
+
+extension DocumentViewController {
+    /// Removes the given annotations in one undoable step.
+    func removeAnnotations(_ items: [(PDFPage, PDFAnnotation)], name: String) {
+        guard !items.isEmpty else { return }
+        textEditor?.commit()
+        selection = nil
+        edit(name) { doc in
+            for (page, a) in items { page.removeAnnotation(a) }
+            doc.annotationsChanged()
+        } reverse: { doc in
+            for (page, a) in items { page.addAnnotation(a) }
+            doc.annotationsChanged()
+        }
     }
 }

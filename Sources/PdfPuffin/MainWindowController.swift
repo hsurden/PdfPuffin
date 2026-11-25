@@ -174,8 +174,11 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
                     if let pane = d.readingPanes.first(where: { hit === $0 || hit.isDescendant(of: $0) }) {
                         d.activatePane(pane)
                         d.thumbnailsActive = false
+                        d.annotationsActive = false
+                    } else {
+                        if !hit.isDescendant(of: d.sidebar.thumbnails) { d.thumbnailsActive = false }
+                        if !hit.isDescendant(of: d.sidebar.annotations) { d.annotationsActive = false }
                     }
-                    else if !hit.isDescendant(of: d.sidebar.thumbnails) { d.thumbnailsActive = false }
                 }
                 DispatchQueue.main.async { self.afterClick() }
             }
@@ -305,7 +308,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
         w.makeFirstResponder(pdf)
     }
 
-    private func handleKeyDown(_ e: NSEvent) -> Bool {
+    func handleKeyDown(_ e: NSEvent) -> Bool {
         let m = e.modifierFlags.intersection([.command, .option, .control, .shift])
         // ⌃Tab / ⌃⇧Tab switch tabs, everywhere.
         if e.keyCode == 48, m == .control { nextTab(nil); return true }
@@ -334,6 +337,12 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
         if e.keyCode == 53, m.isEmpty, current?.selectionBar != nil {
             current?.hideSelectionBar()
             current?.pdfView.clearSelection()
+            return true
+        }
+        // After clicking an annotation in the list, ↑/↓ step to the previous / next one.
+        if current?.annotationsActive == true, m.isEmpty, e.keyCode == 126 || e.keyCode == 125 {
+            current?.sidebar.annotations.step(e.keyCode == 126 ? -1 : 1)
+            window?.makeFirstResponder(pdf)
             return true
         }
         // After clicking a thumbnail, ↑/↓ step one page (like moving through the list).

@@ -342,7 +342,7 @@ extension MainWindowController: NSServicesMenuRequestor {
             item.state = PanZoomPanel.isShown ? .on : .off
             return d != nil
         default:
-            return nil
+            return validateMoreItem(item)
         }
     }
 }

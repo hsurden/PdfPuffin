@@ -73,7 +73,8 @@ Native macOS PDF reader (Swift + AppKit + PDFKit) that has many of the features 
 ## Testing
 
 - Routine checks: `scripts/build.sh`, then `scripts/test-excerpts.sh`, `test-fill-sign-ocr.sh`,
-  `test-review-fixes.sh` and `test-quick-wins.sh` (none needs the screen). `test-menus.sh`
+  `test-review-fixes.sh`, `test-quick-wins.sh`, `test-updates.sh` and `test-more-tools.sh` (none
+  needs the screen). `test-menus.sh`
   drives every menu item with real windows; run it only for menu work.
 - Layer content filters (page themes) don't show in `cacheDisplay` renders; capture the
   window with `CGWindowListCreateImage` to see them.
@@ -106,4 +107,7 @@ Native macOS PDF reader (Swift + AppKit + PDFKit) that has many of the features 
 | `Signatures.swift` | signature store, PDF Expert import, SignatureAnnotation |
 | `ExtraCommands.swift` | new documents, iPhone import, Clear Form, Remove All, summary as Text/HTML, Share, Hide Tools, Always Show Toolbar, page themes, split-view document menus |
 | `PanZoom.swift` | View ▸ Zoom ▸ Pan & Zoom panel |
+| `MoreTools.swift` | Split into Files, watermarks, Speech, images in a PDF, Remove Blank Pages, Remove Password |
+| `DefaultApp.swift` | Make PdfPuffin the Default PDF App |
+| `AppUpdate.swift` | update check, download, install on quit |
 | `docs/reference/read-menus.applescript` | dumps PDF Expert's menus with shortcuts |

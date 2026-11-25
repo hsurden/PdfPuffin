@@ -54,7 +54,7 @@ trap 'restore' ERR INT
 
 scripts/build.sh release
 if (( ! skip_tests )); then
-    for t in test-excerpts test-fill-sign-ocr test-review-fixes test-quick-wins test-updates; do
+    for t in test-excerpts test-fill-sign-ocr test-review-fixes test-quick-wins test-updates test-more-tools; do
         print "== $t"
         scripts/$t.sh > ${TMPDIR:-/tmp}/pdfpuffin-$t.log 2>&1 || { tail -20 ${TMPDIR:-/tmp}/pdfpuffin-$t.log; die "$t failed"; }
     done
