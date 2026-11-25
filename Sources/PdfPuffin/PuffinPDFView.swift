@@ -38,6 +38,22 @@ final class PuffinPDFView: PDFView {
         return true
     }
 
+    // Page theme (View ▸ Theme): applied when the view shows a document or the theme changes.
+    private var themeObserver: NSObjectProtocol?
+    override var document: PDFDocument? {
+        didSet { DispatchQueue.main.async { [weak self] in self?.applyPageTheme() } }
+    }
+    deinit { if let themeObserver { NotificationCenter.default.removeObserver(themeObserver) } }
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if themeObserver == nil {
+            themeObserver = NotificationCenter.default.addObserver(forName: PageTheme.changed, object: nil, queue: .main) { [weak self] _ in
+                self?.applyPageTheme()
+            }
+        }
+        applyPageTheme()
+    }
+
     /// The shape being drawn: annotation, its page, and the drag's start point.
     var drawing: (PDFAnnotation, PDFPage, NSPoint)?
     var inkPoints: [NSPoint] = []

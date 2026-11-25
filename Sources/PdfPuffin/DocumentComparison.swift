@@ -64,9 +64,14 @@ final class DocumentComparison: NSObject {
     private var origins = [NSPoint.zero, NSPoint.zero]
     private var updating = false
 
-    init(tabs: [DocumentViewController], current: DocumentViewController) {
+    convenience init(tabs: [DocumentViewController], current: DocumentViewController) {
         let i = tabs.firstIndex { $0 === current } ?? 0
-        panes = [ComparisonPane(tabs: tabs, index: i), ComparisonPane(tabs: tabs, index: (i + 1) % tabs.count)]
+        self.init(tabs: tabs, left: i, right: (i + 1) % tabs.count)
+    }
+
+    /// `left` / `right` index `tabs` (top / bottom when the panes are stacked).
+    init(tabs: [DocumentViewController], left: Int, right: Int) {
+        panes = [ComparisonPane(tabs: tabs, index: left), ComparisonPane(tabs: tabs, index: right)]
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1000, height: 650),
                           styleMask: [.titled, .resizable], backing: .buffered, defer: false)
         super.init()

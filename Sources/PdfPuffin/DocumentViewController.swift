@@ -998,3 +998,79 @@ extension DocumentViewController {
         return page
     }
 }
+
+// MARK: - whole-document annotation commands (Edit ▸ Clear Form, Remove All Annotations)
+
+extension DocumentViewController {
+    /// Form widgets with something filled in.
+    private var filledWidgets: [(PDFPage, PDFAnnotation, String?, PDFWidgetCellState)] {
+        var out: [(PDFPage, PDFAnnotation, String?, PDFWidgetCellState)] = []
+        for i in 0..<pageCount {
+            guard let page = document.page(at: i) else { continue }
+            for a in page.annotations where a.type == "Widget" {
+                let text = a.widgetStringValue
+                let state = a.buttonWidgetState
+                let filled = a.widgetFieldType == .button ? state == .onState : !(text ?? "").isEmpty
+                if filled { out.append((page, a, text, state)) }
+            }
+        }
+        return out
+    }
+
+    var hasFilledForm: Bool { !filledWidgets.isEmpty }
+
+    /// Empties every text field and unticks every checkbox / radio button. Undoable.
+    func clearForm() {
+        let widgets = filledWidgets
+        guard !widgets.isEmpty else { NSSound.beep(); return }
+        edit("Clear Form") { doc in
+            for (_, a, _, _) in widgets {
+                if a.widgetFieldType == .button { a.buttonWidgetState = .offState } else { a.widgetStringValue = "" }
+            }
+            doc.annotationsChanged()
+        } reverse: { doc in
+            for (_, a, text, state) in widgets {
+                if a.widgetFieldType == .button { a.buttonWidgetState = state } else { a.widgetStringValue = text ?? "" }
+            }
+            doc.annotationsChanged()
+        }
+        for (page, _, _, _) in widgets { pdfView.repaint(page) }
+    }
+
+    /// Markup, notes, drawings, stamps and signatures (links and form fields stay).
+    var userAnnotations: [(PDFPage, PDFAnnotation)] {
+        var out: [(PDFPage, PDFAnnotation)] = []
+        for i in 0..<pageCount {
+            guard let page = document.page(at: i) else { continue }
+            for a in page.annotations where AnnotationsPane.kinds.contains(a.type ?? "") || a.type == "Popup" {
+                out.append((page, a))
+            }
+        }
+        return out
+    }
+
+    /// Removes every user annotation in one undoable step; returns how many went.
+    @discardableResult
+    func removeAllAnnotations() -> Int {
+        textEditor?.commit()
+        noteEditor?.commit()
+        selection = nil
+        let all = userAnnotations
+        guard !all.isEmpty else { return 0 }
+        edit("Remove All Annotations") { doc in
+            for (page, a) in all { page.removeAnnotation(a) }
+            doc.annotationsChanged()
+        } reverse: { doc in
+            for (page, a) in all { page.addAnnotation(a) }
+            doc.annotationsChanged()
+        }
+        return all.filter { $0.1.type != "Popup" }.count
+    }
+
+    /// Edit ▸ Insert Blank Page: a blank page the size of the current one, after it.
+    func insertBlankPageAfterCurrent() {
+        let i = currentPageIndex
+        insertPages([blankPage(like: i)], at: i + 1, name: "Insert Blank Page")
+        jump(toPage: i + 1)
+    }
+}

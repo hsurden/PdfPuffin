@@ -27,10 +27,16 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
     let content = NSView()
     let searchPanel = SearchPanel()
     private var toolRowHeight: NSLayoutConstraint!
+    /// Top of the tab bar; moved up to slide the chrome away in full screen (Always Show Toolbar off).
+    var chromeTop: NSLayoutConstraint!
+    /// Set while the full-screen chrome is tucked away.
+    var chromeTucked = false
     private var searchWidth: NSLayoutConstraint!
     let inspector = ToolInspector()
     private var inspectorWidth: NSLayoutConstraint!
     private var monitors: [Any] = []
+    /// Mouse-moved monitor that reveals the tucked chrome in full screen.
+    var fullScreenMonitor: Any?
     private var movingSelection = false
     private var toastView: NSTextField?
     private var searchDebounce: DispatchWorkItem?
@@ -101,8 +107,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
         toolRowHeight = toolRow.heightAnchor.constraint(equalToConstant: 44)
         searchWidth = searchPanel.widthAnchor.constraint(equalToConstant: 0)
         inspectorWidth = inspector.widthAnchor.constraint(equalToConstant: 0)
+        chromeTop = tabBar.topAnchor.constraint(equalTo: root.topAnchor)
         NSLayoutConstraint.activate([
-            tabBar.topAnchor.constraint(equalTo: root.topAnchor),
+            chromeTop,
             tabBar.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             tabBar.heightAnchor.constraint(equalToConstant: 38),
@@ -144,7 +151,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
         layoutChrome()
     }
 
-    private func layoutChrome() {
+    func layoutChrome() {
         let grid = current?.gridMode == true
         let alt = grid || current == nil ? nil : altRow
         let showTools = (toolsShown || grid || alt != nil) && current != nil
@@ -518,6 +525,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
         searchPanel.cancelSearch()
         monitors.forEach(NSEvent.removeMonitor)
         monitors.removeAll()
+        if let m = fullScreenMonitor { NSEvent.removeMonitor(m); fullScreenMonitor = nil }
         AppDelegate.shared?.windowClosed(self)
     }
 
@@ -1111,6 +1119,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
     // MARK: menu validation
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if let handled = validateExtraItem(item) { return handled }
         let d = current
         switch item.action {
         case #selector(cropPagesAction(_:)): return (d?.pageCount ?? 0) > 0
@@ -1179,6 +1188,9 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
             return d != nil
         case #selector(saveAction(_:)): return d?.isDirty == true || (d != nil && d?.fileURL == nil)
         case #selector(showInFinder(_:)): return d?.fileURL != nil
+        case #selector(toggleFavorite(_:)):
+            item.title = d?.fileURL.map(Favorites.contains) == true ? "Remove from Favorites" : "Add to Favorites"
+            return d?.fileURL != nil
         case #selector(newDocFromSelectedPages(_:)):
             let n = d?.sidebar.thumbnails.selectedPages.count ?? 0
             return n > 0

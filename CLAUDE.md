@@ -62,6 +62,11 @@ Native macOS PDF reader (Swift + AppKit + PDFKit), modelled on PDF Expert 3.13. 
 
 ## Testing
 
+- Routine checks: `scripts/build.sh`, then `scripts/test-excerpts.sh`, `test-fill-sign-ocr.sh`,
+  `test-review-fixes.sh` and `test-quick-wins.sh` (none needs the screen). `test-menus.sh`
+  drives every menu item with real windows; run it only for menu work.
+- Layer content filters (page themes) don't show in `cacheDisplay` renders; capture the
+  window with `CGWindowListCreateImage` to see them.
 - Background computer-use (`app_*`) selects table rows through accessibility without
   firing the click action, so the thumbnail/focus rule needs real clicks (full-screen
   control). Search via Edit ▸ Find ▸ Find… then type into the focused field.
@@ -81,11 +86,14 @@ Native macOS PDF reader (Swift + AppKit + PDFKit), modelled on PDF Expert 3.13. 
 | `PageGridView.swift` | ⌘4 page grid and its page-tools bar (insert, append, rotate, copy, paste, extract, delete) |
 | `ThumbnailsPane.swift` | thumbnails, multi-select, New Document / Add to… |
 | `SearchPanel.swift` | right-hand results panel |
-| `TabBarView.swift`, `ToolbarView.swift`, `HomeView.swift` | chrome |
+| `TabBarView.swift`, `ToolbarView.swift` | chrome |
+| `HomeView.swift` | Home tab: sidebar (Home, Tools, Recents, Favorites), tool cards, Favorites store |
 | `Clipboard.swift` | New from Clipboard |
 | `AnnotationTools.swift` | page tools (shapes, pen, eraser, text, signature), colours/widths, TextStyle |
 | `InlineTextEditor.swift` | typing directly on the page |
 | `ToolInspector.swift` | right-hand tool inspector (PDF Expert style) |
 | `AnnotationSelection.swift` | select / move / resize / delete placed annotations |
 | `Signatures.swift` | signature store, PDF Expert import, SignatureAnnotation |
+| `ExtraCommands.swift` | new documents, iPhone import, Clear Form, Remove All, summary as Text/HTML, Share, Hide Tools, Always Show Toolbar, page themes, split-view document menus |
+| `PanZoom.swift` | View ▸ Zoom ▸ Pan & Zoom panel |
 | `docs/reference/read-menus.applescript` | dumps PDF Expert's menus with shortcuts |

@@ -193,6 +193,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func sub(_ title: String, _ items: [NSMenuItem]) -> NSMenuItem { menu(title, items) }
 
+    /// A submenu rebuilt each time it opens (Share, split-view documents).
+    private func dynamicSub(_ title: String, _ delegate: DynamicMenu) -> NSMenuItem {
+        let top = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        let m = NSMenu(title: title)
+        m.delegate = delegate
+        top.submenu = m
+        return top
+    }
+    private lazy var shareMenu = DynamicMenu { [weak self] m in self?.main?.fillShareMenu(m) }
+    private lazy var leftDocMenu = DynamicMenu { [weak self] m in self?.main?.fillDocumentMenu(m, side: 0) }
+    private lazy var rightDocMenu = DynamicMenu { [weak self] m in self?.main?.fillDocumentMenu(m, side: 1) }
+
     private func key(_ c: Int) -> String { String(Character(UnicodeScalar(c)!)) }
 
     private func buildMenu() -> NSMenu {
@@ -218,7 +230,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             sub("New", [
                 // PDF Expert has no shortcut for From Clipboard. ⌘N matches Preview's
                 // "New from Clipboard" (⌥⌘V is often taken system-wide).
+                item("Empty Document", #selector(M.newEmptyDocument(_:))),
                 item("From Clipboard", #selector(M.newFromClipboard(_:)), "n"),
+                item("From Images…", #selector(M.newFromImages(_:))),
+                item("From File…", #selector(M.newFromFile(_:))),
                 item("From Page Range…", #selector(M.excerptFromRange(_:))),
                 item("From Selected Pages", #selector(M.newDocFromSelectedPages(_:))),
             ]),
@@ -226,6 +241,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item("New Window", #selector(AppDelegate.newWindowAction(_:)), "n", [.command, .shift]),
             item("Open…", #selector(M.openDocumentAction(_:)), "o"),
             recent,
+            {
+                // Continuity Camera: AppKit fills this with nearby iPhones and iPads.
+                let i = NSMenuItem(title: "Import from iPhone or iPad", action: nil, keyEquivalent: "")
+                i.identifier = NSMenuItem.importFromDeviceIdentifier
+                return i
+            }(),
             .separator(),
             item("Close Window", #selector(NSWindow.performClose(_:)), "w", [.command, .shift]),
             item("Close Tab", #selector(M.closeTabAction(_:)), "w"),
@@ -244,14 +265,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item("HTML…", #selector(M.exportToHTML(_:))),
                 item("Image (PNG per page)…", #selector(M.exportToImages(_:))),
             ]),
-            sub("Export Reading Notes", [
+            sub("Export Annotation Summary", [
                 item("Copy as Markdown", #selector(M.copyReadingNotes(_:))),
                 item("Save as Markdown…", #selector(M.saveReadingNotes(_:))),
+                item("Save as Text…", #selector(M.saveSummaryText(_:))),
+                item("Save as HTML…", #selector(M.saveSummaryHTML(_:))),
             ]),
             item("Merge Files…", #selector(M.mergeFiles(_:))),
             item("Set Password…", #selector(M.setPassword(_:))),
             .separator(),
             item("Show in Finder", #selector(M.showInFinder(_:))),
+            dynamicSub("Share", shareMenu),
+            item("Add to Favorites", #selector(M.toggleFavorite(_:))),
             item("Properties…", #selector(M.showProperties(_:))),
             item("Print…", #selector(M.printAction(_:)), "p"),
         ]))
@@ -268,6 +293,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item("Add Bookmark", #selector(M.addBookmarkAction(_:)), "d"),
             item("Rotate Current Page Left", #selector(M.rotateLeftAction(_:)), "l"),
             item("Rotate Current Page Right", #selector(M.rotateRightAction(_:)), "r"),
+            item("Insert Blank Page", #selector(M.insertBlankPageAction(_:))),
+            .separator(),
+            item("Clear Form", #selector(M.clearFormAction(_:))),
+            item("Remove All Annotations", #selector(M.removeAllAnnotationsAction(_:))),
             .separator(),
             sub("Find", [
                 item("Find…", #selector(M.findAction(_:)), "f"),
@@ -285,6 +314,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item("Horizontal", #selector(M.setReadingSplit(_:)), tag: 1),
                 item("Vertical", #selector(M.setReadingSplit(_:)), tag: 2),
                 item("Compare Open Documents…", #selector(M.compareDocuments(_:))),
+                dynamicSub("Change Left/Top Document", leftDocMenu),
+                dynamicSub("Change Right/Bottom Document", rightDocMenu),
                 item("Disable Split View", #selector(M.setReadingSplit(_:)), tag: 0),
             ]),
             item("Thumbnails", #selector(M.toggleGridView(_:)), "4"),
@@ -299,13 +330,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item("Annotate", #selector(M.toggleAnnotateTools(_:))),
             item("Convert", #selector(M.toggleConvertTools(_:))),
             item("Fill & Sign", #selector(M.toggleFillSignTools(_:))),
+            item("Hide Tools", #selector(M.hideToolsAction(_:))),
+            item("Always Show Toolbar", #selector(M.alwaysShowToolbarAction(_:))),
             sub("Zoom", [
                 item("Zoom In", #selector(M.zoomInAction(_:)), "+"),
                 item("Zoom Out", #selector(M.zoomOutAction(_:)), "-"),
                 item("Zoom to 100%", #selector(M.zoomActualAction(_:)), "0"),
                 item("Zoom to Fit Width", #selector(M.zoomFitWidthAction(_:)), "9"),
                 item("Zoom to Fit Page", #selector(M.zoomFitPageAction(_:)), "8"),
+                .separator(),
+                item("Pan & Zoom", #selector(M.togglePanZoom(_:))),
             ]),
+            sub("Theme", PageTheme.allCases.map { item($0.title, #selector(M.themeAction(_:)), tag: $0.rawValue) }),
             .separator(),
             item("Enter Full Screen", #selector(NSWindow.toggleFullScreen(_:)), "f", [.command, .control]),
         ]))
@@ -329,6 +365,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item("Oval", #selector(M.ovalAction(_:)), "o", [.command, .control]),
             item("Line", #selector(M.lineAction(_:)), "l", [.command, .control]),
             item("Arrow", #selector(M.arrowAction(_:)), "a", [.command, .control]),
+            item("Double Arrow", #selector(M.doubleArrowAction(_:))),
             item("Highlight Area", #selector(M.areaAction(_:))),
             .separator(),
             sub("Color", [
@@ -339,6 +376,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 item("Blue", #selector(M.colorAction(_:)), "5", [.command, .control, .option], tag: 4),
                 item("Purple", #selector(M.colorAction(_:)), "6", [.command, .control, .option], tag: 5),
                 item("Black", #selector(M.colorAction(_:)), "7", [.command, .control, .option], tag: 6),
+                .separator(),
+                item("Custom…", #selector(M.customColorAction(_:))),
             ]),
         ]))
 

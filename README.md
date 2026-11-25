@@ -69,7 +69,8 @@ to your tab. The comparison uses snapshots including unsaved edits.
 The **View Settings** button next to the thumbnail grid button groups page layout,
 continuous scrolling, split direction, and document comparison.
 
-Use **File ▸ Export Reading Notes ▸ Copy as Markdown** or **Save as Markdown…**.
+Use **File ▸ Export Annotation Summary ▸ Copy as Markdown** or **Save as Markdown…**
+(or **Save as Text…** / **Save as HTML…**).
 The same commands are in the annotation list’s context menu. Notes are grouped
 by printed page, with the physical PDF page included when it differs. Markup
 exports the selected passage and any distinct annotation comment. Text notes
@@ -96,8 +97,10 @@ goes back to reading. Every change can be undone.
 
 ## Features
 
-- **Tabs** in a dark tab strip: one document per tab, Home tab (Open Files,
-  drop zone, New from Clipboard, Recents grid), ⌘T, ⌘W, ⌃Tab / ⌃⇧Tab, ⇧⌘[ / ⇧⌘].
+- **Tabs** in a dark tab strip: one document per tab, Home tab with a sidebar like PDF Expert's:
+  **Home** (Open Files, drop zone, Tools for You, Recents, Favorites), **Tools** (every tool by
+  group; a tool that needs a document asks for one), **Recents** and **Favorites** (right-click a
+  file, or File ▸ Add to Favorites), ⌘T, ⌘W, ⌃Tab / ⌃⇧Tab, ⇧⌘[ / ⇧⌘].
   Unsaved tabs show a dot and ask before closing or quitting.
 - **Paging:** Single Page, Two Pages, Two Pages but First Single, with or without
   Continuous Scroll; zoom box (percentages, Fit Width, Fit Page, Automatic) with − / +;
@@ -161,6 +164,20 @@ goes back to reading. Every change can be undone.
   **Set Password…** saves a password-protected copy. **Properties…** shows file,
   page size, PDF version, title, author, dates, producer, security and whether the
   pages have a text layer.
+- **New documents:** File ▸ New ▸ **Empty Document** (one Letter page), **From Images…**
+  (one page per image), **From File…** (PDFs and images combined into a new tab), and
+  **Import from iPhone or iPad** (Continuity Camera: scan or photograph straight into a new tab).
+- **Clean-up:** Edit ▸ **Insert Blank Page** (after the current page), **Clear Form** (empties
+  fields, unticks boxes) and **Remove All Annotations** (keeps links and form fields). Each
+  is one Undo.
+- **Annotate extras:** **Double Arrow**, and Annotate ▸ Color ▸ **Custom…** (or *Custom Color…*
+  in the tool inspector) for any colour, remembered per tool.
+- **View:** **Theme** ▸ Day / Sepia / Night (tints only the pages, so markup colours keep
+  their meaning); **Hide Tools**; **Always Show Toolbar** (turn it off and the toolbars slide
+  away in full screen until you point at the top); Zoom ▸ **Pan & Zoom** (a floating map of
+  the page: drag the red box to move, slider to zoom); Split View ▸ **Change Left/Top** or
+  **Right/Bottom Document** (opens Compare with the document you pick on that side).
+- **File ▸ Share** (Mail, Messages, AirDrop and other services; unsaved changes go in a copy).
 - **Save / Save As** (refuses to Save As onto a file open in another tab), Print,
   Rotate current page (⌘L / ⌘R), Show in Finder.
 
@@ -198,10 +215,10 @@ goes back to reading. Every change can be undone.
 - No Edit PDF, Excel / PowerPoint export, Measure, Translate, PDF Copilot or AI tools; Scan & OCR
   has only Recognize Text (no Enhance Scan, Split Pages, Clear Margins).
 - No custom stamps, Content Selection, border styles / hatch patterns, pen
-  sensitivity, or custom colour picker (seven fixed colours).
+  sensitivity, rotating or aligning annotations, or Snap.
 - Text boxes have one style for the whole box. You cannot draw a new signature in the app (import or add an image).
-- No Day/Sepia/Night themes or editing embedded page labels.
-- No File ▸ New ▸ Empty Document / From Images / From File.
+- No editing embedded page labels, Page Resize, outline editing, or headers, footers,
+  page numbers and Bates numbers.
 - Search has Match Case and Whole Word, but no redaction.
 - PDFKit rewrites the file on Save; complex PDFs may come out larger or slightly
   different from PDF Expert's saves.

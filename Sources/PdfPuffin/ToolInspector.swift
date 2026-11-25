@@ -71,7 +71,7 @@ final class ToolInspector: NSView {
         editingSelection = nil
         editingAnnotation = nil
         sliderBeforeSnapshot = nil
-        sliderActions.removeAll(); sliderLabels.removeAll(); swatchActions.removeAll()
+        sliderActions.removeAll(); sliderLabels.removeAll(); swatchActions.removeAll(); controlActions.removeAll()
         stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         let shape = ShapeTool(rawValue: key)
         titleLabel.stringValue = key == "signature" ? "Signatures" : "\(Self.title(for: key)) Tool"
@@ -112,9 +112,15 @@ final class ToolInspector: NSView {
             })
         }
         add(section(shape?.isShape == true && key != "area" ? "STROKE COLOR" : "COLOR"))
-        add(swatches(selected: AnnotColors.index(for: key), allowNone: false) { [weak self] i in
+        let custom = AnnotColors.customColor(for: key).map { [("Custom", $0)] } ?? []
+        add(swatches(selected: AnnotColors.index(for: key), allowNone: false, palette: AnnotColors.palette + custom) { [weak self] i in
             AnnotColors.set(i, for: key); self?.changed()
         })
+        let pick = NSButton(title: "Custom Color…", target: self, action: #selector(controlTriggered(_:)))
+        pick.controlSize = .small
+        pick.refusesFirstResponder = true
+        controlActions[ObjectIdentifier(pick)] = { [weak self] in self?.main?.customColorAction(nil) }
+        add(pick)
         if key == "rectangle" || key == "oval" {
             add(section("FILL COLOR"))
             add(swatches(selected: AnnotColors.fillIndex(for: key), allowNone: true) { [weak self] i in
@@ -149,7 +155,9 @@ final class ToolInspector: NSView {
         case "StrikeOut": return "strikeOut"
         case "FreeText": return "text"
         case "Ink": return "pen"
-        case "Line": return a.endLineStyle == .openArrow ? "arrow" : "line"
+        case "Line":
+            if a.startLineStyle == .openArrow && a.endLineStyle == .openArrow { return "doubleArrow" }
+            return a.endLineStyle == .openArrow ? "arrow" : "line"
         case "Square":
             let noBorder = (a.border?.lineWidth ?? 0) == 0
             let hasFill = a.interiorColor != nil && a.interiorColor != .clear

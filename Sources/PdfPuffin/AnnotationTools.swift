@@ -3,23 +3,25 @@ import PDFKit
 
 /// Shape tools: drag anywhere on a page to draw one. Hold ⇧ for a square / circle.
 enum ShapeTool: String, CaseIterable {
-    case rectangle, oval, area, text, pen, eraser, line, arrow, note, signature, date, check, cross, stamp
+    case rectangle, oval, area, text, pen, eraser, line, arrow, doubleArrow, note, signature, date, check, cross, stamp
 
     var title: String {
-        ["Rectangle", "Oval", "Highlight Area", "Text", "Pen", "Eraser", "Line", "Arrow", "Note", "Signature",
+        ["Rectangle", "Oval", "Highlight Area", "Text", "Pen", "Eraser", "Line", "Arrow", "Double Arrow", "Note", "Signature",
          "Date", "Checkmark", "Cross", "Stamp"][index]
     }
     var symbol: String {
         ["rectangle", "circle", "rectangle.inset.filled", "character.textbox", "pencil.tip", "eraser",
-         "line.diagonal", "arrow.up.right", "text.bubble", "signature", "calendar", "checkmark", "xmark", "seal"][index]
+         "line.diagonal", "arrow.up.right", "arrow.left.and.right", "text.bubble", "signature", "calendar", "checkmark", "xmark", "seal"][index]
     }
     /// Fill & Sign tools placed with a single click.
     var isClickPlaced: Bool { [.date, .check, .cross, .stamp].contains(self) }
     /// Tools listed under the Shapes button.
-    static let shapes: [ShapeTool] = [.rectangle, .oval, .line, .arrow, .area]
+    static let shapes: [ShapeTool] = [.rectangle, .oval, .line, .arrow, .doubleArrow, .area]
+    /// Straight-line tools (drawn as PDF Line annotations).
+    var isLine: Bool { [.line, .arrow, .doubleArrow].contains(self) }
     var isShape: Bool { Self.shapes.contains(self) }
     /// Tools with a line thickness setting.
-    var hasWidth: Bool { [.rectangle, .oval, .line, .arrow, .pen].contains(self) }
+    var hasWidth: Bool { [.rectangle, .oval, .line, .arrow, .doubleArrow, .pen].contains(self) }
     private var index: Int { Self.allCases.firstIndex(of: self)! }
 }
 
@@ -39,7 +41,7 @@ enum AnnotColors {
     /// Tool keys: "highlight", "underline", "strikeOut", or a ShapeTool raw value.
     static let defaults: [String: Int] = [
         "highlight": 2, "underline": 4, "strikeOut": 0, "rectangle": 0, "oval": 0, "area": 2, "text": 0,
-        "pen": 0, "line": 0, "arrow": 0, "note": 2, "date": 6, "check": 6, "cross": 6, "stamp": 0,
+        "pen": 0, "line": 0, "arrow": 0, "doubleArrow": 0, "note": 2, "date": 6, "check": 6, "cross": 6, "stamp": 0,
     ]
 
     static func key(for subtype: PDFAnnotationSubtype) -> String {
@@ -53,7 +55,24 @@ enum AnnotColors {
     static func index(for key: String) -> Int {
         (UserDefaults.standard.object(forKey: "color:" + key) as? Int) ?? defaults[key] ?? 0
     }
-    static func color(for key: String) -> NSColor { palette[min(index(for: key), palette.count - 1)].1 }
+    /// Index `palette.count` means the tool's own custom colour (Annotate ▸ Color ▸ Custom…).
+    static var customIndex: Int { palette.count }
+    static func color(for key: String) -> NSColor {
+        let i = index(for: key)
+        if i == customIndex, let c = customColor(for: key) { return c }
+        return palette[min(max(0, i), palette.count - 1)].1
+    }
+    static func customColor(for key: String) -> NSColor? {
+        guard let data = UserDefaults.standard.data(forKey: "customColor:" + key) else { return nil }
+        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data)
+    }
+    static func setCustom(_ c: NSColor, for key: String) {
+        let srgb = c.usingColorSpace(.sRGB) ?? c
+        if let data = try? NSKeyedArchiver.archivedData(withRootObject: srgb, requiringSecureCoding: true) {
+            UserDefaults.standard.set(data, forKey: "customColor:" + key)
+        }
+        set(customIndex, for: key)
+    }
     static func set(_ i: Int, for key: String) { UserDefaults.standard.set(i, forKey: "color:" + key) }
 
     static let widths: [CGFloat] = [1, 2, 3, 5, 8]
@@ -177,7 +196,7 @@ extension PuffinPDFView {
         if tool == .pen { inkPoints.append(q) }
         if e.modifierFlags.contains(.shift), tool != .pen {       // square / circle / 45° line
             var w = q.x - start.x, h = q.y - start.y
-            if tool == .line || tool == .arrow {
+            if tool.isLine {
                 if abs(w) > abs(h) * 2 { h = 0 } else if abs(h) > abs(w) * 2 { w = 0 }
                 else { let s = max(abs(w), abs(h)); w = w < 0 ? -s : s; h = h < 0 ? -s : s }
             } else {
@@ -272,14 +291,15 @@ extension PuffinPDFView {
             }
             a.add(path)
             a.color = color
-        case .line, .arrow:
+        case .line, .arrow, .doubleArrow:
             let pad = lw * 4 + 6
             let r = NSRect(x: min(s.x, q.x) - pad, y: min(s.y, q.y) - pad,
                            width: abs(q.x - s.x) + pad * 2, height: abs(q.y - s.y) + pad * 2)
             a = PDFAnnotation(bounds: r, forType: .line, withProperties: nil)
             a.startPoint = NSPoint(x: s.x - r.minX, y: s.y - r.minY)
             a.endPoint = NSPoint(x: q.x - r.minX, y: q.y - r.minY)
-            a.endLineStyle = tool == .arrow ? .openArrow : .none
+            a.endLineStyle = tool == .line ? .none : .openArrow
+            a.startLineStyle = tool == .doubleArrow ? .openArrow : .none
             a.color = color
         default:
             let r = NSRect(x: min(s.x, q.x), y: min(s.y, q.y), width: abs(q.x - s.x), height: abs(q.y - s.y))

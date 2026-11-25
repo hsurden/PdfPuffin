@@ -22,16 +22,8 @@ enum Clipboard {
         }
         // 2. Files copied in Finder.
         if let urls = pb.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
-           !urls.isEmpty {
-            let out = PDFDocument()
-            for u in urls {
-                if let d = PDFDocument(url: u), d.pageCount > 0, u.pathExtension.lowercased() == "pdf" {
-                    for i in 0..<d.pageCount { if let p = d.page(at: i)?.copy() as? PDFPage { out.insert(p, at: out.pageCount) } }
-                } else if let img = NSImage(contentsOf: u), let p = page(for: img) {
-                    out.insert(p, at: out.pageCount)
-                }
-            }
-            if out.pageCount > 0 { return out }
+           !urls.isEmpty, let out = document(fromFiles: urls) {
+            return out
         }
         // 3. Image data (screenshots, copied pictures).
         if let imgs = pb.readObjects(forClasses: [NSImage.self], options: nil) as? [NSImage], !imgs.isEmpty {
@@ -40,6 +32,20 @@ enum Clipboard {
             if out.pageCount > 0 { return out }
         }
         return nil
+    }
+
+    /// PDFs (every page) and images (one page each), in the order given.
+    /// Used by From Clipboard, File ▸ New ▸ From Images / From File.
+    static func document(fromFiles urls: [URL]) -> PDFDocument? {
+        let out = PDFDocument()
+        for u in urls {
+            if u.pathExtension.lowercased() == "pdf", let d = PDFDocument(url: u), d.pageCount > 0 {
+                for i in 0..<d.pageCount { if let p = d.page(at: i)?.copy() as? PDFPage { out.insert(p, at: out.pageCount) } }
+            } else if let img = NSImage(contentsOf: u), let p = page(for: img) {
+                out.insert(p, at: out.pageCount)
+            }
+        }
+        return out.pageCount > 0 ? out : nil
     }
 
     /// Cheap check used to enable File ▸ New ▸ From Clipboard.
