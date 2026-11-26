@@ -24,6 +24,8 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
     private let pdfContainer = NSView()
     private let badge = PillButton()
     private let backPill = PillButton()
+    /// Previous / pause / next / stop while reading aloud (Edit ▸ Speech, right-click).
+    let readAloudBar = ReadAloudBar()
     private var backTarget: Int?
 
     /// True after a click in the thumbnail list: ↑/↓ then step one page, like
@@ -137,7 +139,10 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
             v.translatesAutoresizingMaskIntoConstraints = false
             pdfContainer.addSubview(v)
         }
+        pdfContainer.addSubview(readAloudBar)
         NSLayoutConstraint.activate([
+            readAloudBar.centerXAnchor.constraint(equalTo: pdfContainer.centerXAnchor),
+            readAloudBar.bottomAnchor.constraint(equalTo: pdfContainer.bottomAnchor, constant: -14),
             badge.trailingAnchor.constraint(equalTo: pdfContainer.trailingAnchor, constant: -28),
             badge.bottomAnchor.constraint(equalTo: pdfContainer.bottomAnchor, constant: -10),
             backPill.leadingAnchor.constraint(equalTo: pdfContainer.leadingAnchor, constant: 10),

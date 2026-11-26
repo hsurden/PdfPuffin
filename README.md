@@ -222,8 +222,11 @@ goes back to reading. Every change can be undone.
 - **Watermarks:** Edit ▸ **Add Watermark…** puts faint text (or a picture) across all pages or
   this one, diagonal or horizontal, in four colours and three strengths. Other PDF readers show
   it. **Remove Watermark** takes it off again, including watermark annotations from other apps.
-- **Read aloud:** Edit ▸ Speech ▸ **Start Speaking** reads the selected text, or the document
-  from the current page on, turning pages as it goes. **Stop Speaking** stops.
+- **Read aloud:** right-click the page ▸ **Read Aloud from Here**, or Edit ▸ Speech ▸ **Start
+  Speaking** (from the selection, or the top of the page). It reads on through the document,
+  turning pages and highlighting the sentence and word being spoken. A translucent bar at the
+  bottom has ⏮ previous sentence, ⏯ pause / resume, ⏭ next sentence, a speed box (type 1 to 2,
+  e.g. 1.3, then **Speed**) and ✕ stop.
 - **Annotation list:** click a comment, then ↓ / ↑ step to the next / previous one, jumping to
   it on the page. Each document also reopens at the zoom you left it at.
 - **New documents:** File ▸ New ▸ **Empty Document** (one Letter page), **From Images…**

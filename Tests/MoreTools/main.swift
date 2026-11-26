@@ -176,5 +176,68 @@ check(!both.allowsPrinting && both.allowsCopying, "the open password does not li
 let plain = protect("simple.pdf", open: true, print: true, copy: true, edit: true)
 check(plain.isLocked && plain.unlock(withPassword: "secret") && plain.allowsPrinting && plain.allowsCopying, "plain open password as before")
 
+// Read Aloud: sentence by sentence from any point, previous / pause / next, speed 1–2.
+check(ReadAloud.rate(for: 1) == 0.5 && abs(ReadAloud.rate(for: 2) - 0.668) < 0.005, "speed 1× and 2× map to the measured rates")
+check(ReadAloud.rate(for: 1.5) > ReadAloud.rate(for: 1.3) && ReadAloud.rate(for: 1.5) < ReadAloud.rate(for: 1.7), "speeds in between rise steadily")
+let speechURL = root.appendingPathComponent("speech.pdf")
+do {
+    var media = CGRect(x: 0, y: 0, width: 612, height: 792)
+    let ctx = CGContext(speechURL as CFURL, mediaBox: &media, nil)!
+    for page in 1...2 {
+        ctx.beginPDFPage(nil)
+        for (k, line) in ["First sentence on page \(page).", "Second sentence here.", "Third and last one."].enumerated() {
+            ctx.textPosition = CGPoint(x: 72, y: 700 - CGFloat(k) * 40)
+            CTLineDraw(CTLineCreateWithAttributedString(NSAttributedString(string: line, attributes: [.font: NSFont.systemFont(ofSize: 14)])), ctx)
+        }
+        ctx.endPDFPage()
+    }
+    ctx.closePDF()
+}
+win.open(urls: [speechURL]); settle(0.6)
+let sd = win.current!
+let reader = ReadAloud.shared
+reader.volume = 0
+reader.speed = 1
+let speechPage = sd.document.page(at: 0)!
+let second = ((speechPage.string ?? "") as NSString).range(of: "Second").location
+check(ReadAloud.characterIndex(on: speechPage, at: NSPoint(x: 400, y: 664)) == second,
+      "right-click beside the second line starts at the second sentence")
+check(ReadAloud.characterIndex(on: speechPage, at: NSPoint(x: 80, y: 645)) == ((speechPage.string ?? "") as NSString).range(of: "Third").location,
+      "right-click between lines starts at the next line down")
+check(ReadAloud.characterIndex(on: speechPage, at: NSPoint(x: 80, y: 665)) == second,
+      "right-click at the start of a line starts that line, not the sentence before")
+let rightClick = NSEvent.mouseEvent(with: .rightMouseDown, location: sd.pdfView.convert(sd.pdfView.convert(NSPoint(x: 80, y: 700), from: speechPage), to: nil),
+                                    modifierFlags: [], timestamp: 0, windowNumber: win.window!.windowNumber, context: nil,
+                                    eventNumber: 0, clickCount: 1, pressure: 1)!
+check(sd.pdfView.menu(for: rightClick)?.items.first?.title == "Read Aloud from Here", "right-click menu offers Read Aloud from Here")
+// A one-word selection starts reading there and keeps going (it used to read only that word).
+sd.pdfView.setCurrentSelection(speechPage.selection(for: NSRange(location: second, length: 6)), animate: false)
+reader.start(sd); settle()
+check(reader.isActive && reader.sentenceIndex == 1 && reader.pageIndex == 0, "a one-word selection starts at its sentence")
+check(!sd.readAloudBar.isHidden, "the bar appears at the bottom")
+check((sd.pdfView.highlightedSelections ?? []).contains { ($0.string ?? "").contains("Second") }, "the sentence being read is highlighted")
+reader.next(); settle()
+check(reader.sentenceIndex == 2, "⏭ goes to the next sentence")
+reader.next(); settle(0.4)
+check(reader.pageIndex == 1 && reader.sentenceIndex == 0 && sd.currentPageIndex == 1, "⏭ from the last sentence turns to the next page")
+reader.previous(); settle(0.4)
+check(reader.pageIndex == 0 && reader.sentenceIndex == 2, "⏮ goes back across the page break")
+reader.pauseOrResume()
+check(reader.isPaused, "⏯ pauses")
+reader.pauseOrResume()
+check(!reader.isPaused && reader.isActive, "⏯ resumes")
+sd.readAloudBar.enterSpeed("1,3")
+check(abs(reader.speed - 1.3) < 0.001 && sd.readAloudBar.speedTitle == "1.3", "typing 1,3 and pressing Speed sets 1.3")
+sd.readAloudBar.enterSpeed("5")
+check(reader.speed == 2 && sd.readAloudBar.speedTitle == "2.0", "speeds above 2 are capped at 2.0 (shown)")
+sd.readAloudBar.enterSpeed("fast")
+check(reader.speed == 2 && sd.readAloudBar.speedTitle == "2.0", "text that isn't a number leaves the speed alone")
+reader.stop()
+check(!reader.isActive && sd.readAloudBar.isHidden, "✕ stops and hides the bar")
+reader.start(sd, page: 0, character: 0); settle()
+win.newHomeTab(nil); settle()
+check(!reader.isActive, "switching tabs stops reading")
+reader.speed = 1
+
 print("All passed")
 exit(0)

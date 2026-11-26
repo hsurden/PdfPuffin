@@ -374,6 +374,7 @@ final class MainWindowController: NSWindowController, NSWindowDelegate, NSMenuIt
 
     func selectTab(_ i: Int) {
         guard tabs.indices.contains(i) else { return }
+        if let d = current, ReadAloud.shared.doc === d { ReadAloud.shared.stop() }   // reading follows one tab
         current?.textEditor?.commit()
         current?.noteEditor?.commit()
         current?.selection = nil

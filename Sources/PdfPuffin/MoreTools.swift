@@ -226,62 +226,6 @@ enum PDFImages {
     }
 }
 
-// MARK: - Speech (Edit ▸ Speech)
-
-/// Reads the selected text, or the document from the current page on, turning the
-/// page as it goes.
-final class ReadAloud: NSObject, AVSpeechSynthesizerDelegate {
-    static let shared = ReadAloud()
-    private let synth = AVSpeechSynthesizer()
-    private weak var doc: DocumentViewController?
-    private var pageIndex = 0
-    private var readingPages = false
-    var isSpeaking: Bool { synth.isSpeaking }
-
-    override init() { super.init(); synth.delegate = self }
-
-    func start(_ d: DocumentViewController) {
-        stop()
-        doc = d
-        if let s = d.pdfView.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
-            readingPages = false
-            synth.speak(AVSpeechUtterance(string: s))
-        } else {
-            readingPages = true
-            pageIndex = d.currentPageIndex
-            speakNextPage()
-        }
-    }
-
-    func stop() {
-        readingPages = false
-        if synth.isSpeaking { synth.stopSpeaking(at: .immediate) }
-    }
-
-    /// Skips pages with no text (scans: run Recognize Text first).
-    private func speakNextPage() {
-        guard readingPages, let d = doc else { return }
-        while pageIndex < d.pageCount {
-            let text = (d.document.page(at: pageIndex)?.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            if !text.isEmpty {
-                if d.currentPageIndex != pageIndex { d.jump(toPage: pageIndex) }
-                synth.speak(AVSpeechUtterance(string: text))
-                return
-            }
-            pageIndex += 1
-        }
-        readingPages = false
-    }
-
-    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-        DispatchQueue.main.async {
-            guard self.readingPages else { return }
-            self.pageIndex += 1
-            self.speakNextPage()
-        }
-    }
-}
-
 // MARK: - commands
 
 extension MainWindowController {
