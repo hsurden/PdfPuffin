@@ -520,9 +520,17 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
             }
         }
 
+        // Some selections report a null or infinite rect for their page; converted,
+        // that becomes NaN, and AppKit aborts on a NaN frame. No usable rect, no bar.
         let size = bar.fittingSize
-        let viewRect = pdfView.convert(selection.bounds(for: page), from: page)
+        let pageRect = selection.bounds(for: page)
+        let viewRect = pdfView.convert(pageRect, from: page)
         let bounds = pdfView.bounds.insetBy(dx: 8, dy: 8)
+        guard pageRect.isUsableGeometry, viewRect.isUsableGeometry, bounds.isUsableGeometry,
+              size.width.isFinite, size.height.isFinite else {
+            hideSelectionBar()
+            return
+        }
         let x = min(max(viewRect.midX - size.width / 2, bounds.minX), max(bounds.minX, bounds.maxX - size.width))
         var y: CGFloat
         if pdfView.isFlipped {
@@ -533,6 +541,7 @@ final class DocumentViewController: NSViewController, NSSplitViewDelegate {
             if y + size.height > bounds.maxY { y = viewRect.minY - size.height - 8 }
         }
         y = min(max(y, bounds.minY), max(bounds.minY, bounds.maxY - size.height))
+        guard x.isFinite, y.isFinite else { hideSelectionBar(); return }
         bar.frame = NSRect(origin: NSPoint(x: x, y: y), size: size)
         bar.isHidden = false
     }
@@ -1105,5 +1114,13 @@ extension DocumentViewController {
             for (page, a) in items { page.addAnnotation(a) }
             doc.annotationsChanged()
         }
+    }
+}
+
+extension NSRect {
+    /// Not null, not infinite, and every coordinate finite (safe to use for a view frame).
+    var isUsableGeometry: Bool {
+        !isNull && !isInfinite
+            && origin.x.isFinite && origin.y.isFinite && size.width.isFinite && size.height.isFinite
     }
 }
